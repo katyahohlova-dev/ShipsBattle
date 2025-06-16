@@ -36,6 +36,25 @@ class Field:
     def get_ships(self):
         pass
 
+    def check_coordinates(self, pole, obj):
+        if obj.tp == 1:
+            if obj.x < 0 or obj.x + obj.length > self.size:
+                return False
+            for x in range(max(0, obj.x - 1), min(self.size, obj.x + obj.length + 1)):
+                for y in range(max(0, obj.y - 1), min(self.size, obj.y + 2)):
+                    if pole[y][x] != 0:
+                        return False
+            return True
+        elif obj.tp == 2:
+            if obj.y < 0 or  obj.y + obj.length > self.size:
+                return False
+            for y in range(max(0, obj.y-1), min(self.size, obj.y + obj.length + 1)):
+                for x in range(max(0, obj.x - 1), min(self.size, obj.x + 2)):
+                    if self.pole[y][x] != 0:
+                        return False
+            return True
+        return False
+
     def init(self) -> None:
         self.pole = [[0 for _ in range(self.size)] for _ in range(self.size)]
 
@@ -44,43 +63,20 @@ class Field:
             for _ in range(count):
                 self.ships.append(Ship(length, random.randint(1, 2)))
 
-        while self.ships:
-            obj = self.ships.pop()
+        for obj in self.ships:
+            placed = False
+            while not placed:
+                obj.x = random.randint(0, self.size-1)
+                obj.y = random.randint(0, self.size-1)
 
-            obj.x = random.randint(0, self.size-1)
-            obj.y = random.randint(0, self.size-1)
-
-            if obj.tp == 1:  #горизонт
-                if obj.x + obj.length > self.size:
-                    continue
-
-                for x in range(max(0, obj.x-1), min(self.size, obj.x+2)):
-                    for y in range(max(0, obj.y-1), min(self.size, obj.y+2)):
-                        if self.pole[x][y] != 0:
-                            conflict = True
-                            break
-                if conflict:
-                    continue
-
-                for i in range(obj.length - 1):
-                    self.pole[obj.y][obj.x + i] = obj
-
-            elif obj.tp == 2:
-                if obj.y + obj.length > self.size:
-                    continue
-
-                conflict = False
-                for i in range(obj.length - 1):
-                    if self.pole[obj.y][obj.x + i] != 0 or self.pole[obj.y + i][obj.x + i] != 0 or self.pole[obj.y][
-                        obj.x - i] != 0 or self.pole[obj.y - i][obj.x + i]:
-                        conflict = True
-                        break
-                if conflict:
-                    continue
-
-
-                for j in range(obj.length-1):
-                    self.pole[obj.y + j][obj.x] = obj
+                if self.check_coordinates(self.pole, obj):
+                    if obj.tp == 1:  #горизонт
+                        for x in range(obj.x, obj.x + obj.length):
+                            self.pole[obj.y][x] = 1
+                    elif obj.tp == 2:
+                        for y in range(obj.y, obj.y + obj.length):
+                            self.pole[y][obj.x] = 1
+                    placed = True
 
 
 
